@@ -50,17 +50,22 @@ def print_step_running(step):
 @before.each_scenario
 def print_scenario_running(scenario):
     if scenario.background:
-        # Only print the background on the first scenario run
-        # So, we determine if this was called previously with the attached background.
-        # If so, skip the print_scenario() since we'll call it again in the after_background.
+        # we need to store the scenario assocaited to the background so that the background's "after each" call back
+        # can call the scenario display method with the asscoaited scenario passed as an argument
         if not hasattr(world, 'background_scenario_holder'):
             world.background_scenario_holder = {}
-        if scenario.background not in world.background_scenario_holder:
-            # We haven't seen this background before, add our 1st scenario
-            world.background_scenario_holder[scenario.background] = scenario
-            return
-    wrt('\n')
-    wrt(scenario.represented())
+        # only display the scenario name if the backgroun has already been displayed
+        # otherwise, the scenario gets displayed twice: once before the background, and again between
+        # the background and the scenario
+        if world.background_scenario_holder.get(scenario.background) == scenario:
+            wrt('\n')
+            wrt(scenario.represented())
+        # update the running scenario, so that when the background is shown, the proper scenario name is displayed
+        world.background_scenario_holder[scenario.background] = scenario
+    else:
+        # no background, just print the scenario name
+        wrt('\n')
+        wrt(scenario.represented())
 
 
 @before.each_background
