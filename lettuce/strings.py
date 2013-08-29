@@ -93,7 +93,14 @@ def column_width(string):
 
 def rfill(string, times, char=u" ", append=u""):
     string = unicode(string)
-    missing = times - column_width(string)
+    # in the case of mulitline text, the rfill will actually be applied to the last line,
+    # so we only consider the last line's length
+    last_line = string
+    if "\n" in string:
+        last_line = string.split("\n")[-1]
+
+    string = unicode(string)
+    missing = times - column_width(last_line)
     for x in range(missing):
         string += char
 
