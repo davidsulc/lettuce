@@ -524,7 +524,9 @@ def test_scenario_show_tags_in_its_representation():
         original_string=SCENARIO1.strip(),
         tags=['slow', 'firefox', 'chrome'])
 
-    expect(scenario.represented()).to.equal(
+    # we must strip spaces to the right, as they are added for padding so
+    # the line the scenario is defined on will be aligned properly when printed
+    expect(scenario.represented().rstrip()).to.equal(
         u'  @slow @firefox @chrome\n  '
         'Scenario: Adding some students to my university database')
 
