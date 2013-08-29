@@ -134,19 +134,24 @@ def print_step_ran(step):
 
 @before.each_scenario
 def print_scenario_running(scenario):
-    if scenario.background:
-        # Only print the background on the first scenario run
-        # So, we determine if this was called previously with the attached background.
-        # If so, skip the print_scenario() since we'll call it again in the after_background.
-        if not hasattr(world, 'background_scenario_holder'):
-            world.background_scenario_holder = {}
-        if scenario.background not in world.background_scenario_holder:
-            # We haven't seen this background before, add our 1st scenario
-            world.background_scenario_holder[scenario.background] = scenario
-            return
+    # build string writing the scenario's name and line number
     string = scenario.represented()
     string = wrap_file_and_line(string, '\033[1;30m', '\033[0m')
-    write_out("\n\033[1;37m%s" % string)
+    if scenario.background:
+        # we need to store the scenario associated with the background so that the background's "after each" callback
+        # can call the scenario display method with the associated scenario passed as an argument
+        if not hasattr(world, 'background_scenario_holder'):
+            world.background_scenario_holder = {}
+        # only display the scenario name if the background has already been displayed
+        # otherwise, the scenario gets displayed twice: once before the background, and again between
+        # the background and the scenario
+        if world.background_scenario_holder.get(scenario.background) == scenario:
+            write_out("\n\033[1;37m%s" % string)
+        # update the running scenario, so that when the background is shown, the proper scenario name is displayed
+        world.background_scenario_holder[scenario.background] = scenario
+    else:
+        # no background, just print the scenario name
+        write_out("\n\033[1;37m%s" % string)
 
 
 @after.outline
@@ -285,6 +290,6 @@ def print_background_running(background):
 
 
 @after.each_background
-def print_first_scenario_running(background, results):
+def print_current_scenario_running(background, results):
     scenario = world.background_scenario_holder[background]
     print_scenario_running(scenario)

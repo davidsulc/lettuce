@@ -1230,6 +1230,47 @@ def test_background_without_header():
 
 
 @with_setup(prepare_stdout)
+def test_output_background_with_correct_line_numbers():
+    "Scenarios with a background should print the scenario line numbers correctly"
+
+    from lettuce import step
+
+    @step(ur'the variable "(\w+)" holds (\d+)')
+    @step(ur'the variable "(\w+)" is equal to (\d+)')
+    def just_pass(step, *args):
+        pass
+
+    filename = bg_feature_name('simple_multiple')
+    runner = Runner(filename, verbosity=3)
+
+    runner.run()
+
+    assert_stdout_lines(
+        '\n'
+        'Feature: Simple and successful with multiple scenarios                                                          # tests/functional/bg_features/simple_multiple/simple_multiple.feature:1\n'
+        '  As the Lettuce maintainer                                                                                     # tests/functional/bg_features/simple_multiple/simple_multiple.feature:2\n'
+        '  In order to make sure the output for multiple scenarios with a background display their line number correctly # tests/functional/bg_features/simple_multiple/simple_multiple.feature:3\n'
+        '  I want to automate its test                                                                                   # tests/functional/bg_features/simple_multiple/simple_multiple.feature:4\n'
+        '\n'
+        '  Background:\n'
+        '    Given the variable "X" holds 2                                                                              # tests/functional/test_runner.py:1239\n'
+        '\n'
+        '  Scenario: multiplication changing the value                                                                   # tests/functional/bg_features/simple_multiple/simple_multiple.feature:9\n'
+        '    Given the variable "X" is equal to 2                                                                        # tests/functional/test_runner.py:1239\n'
+        '\n'
+        '  Background:\n'
+        '    Given the variable "X" holds 2                                                                              # tests/functional/test_runner.py:1239\n'
+        '\n'
+        '  Scenario: multiplication changing the value again                                                             # tests/functional/bg_features/simple_multiple/simple_multiple.feature:12\n'
+        '    Given the variable "X" is equal to 4                                                                        # tests/functional/test_runner.py:1239\n'
+        '\n'
+        '1 feature (1 passed)\n'
+        '2 scenarios (2 passed)\n'
+        '2 steps (2 passed)\n'
+    )
+
+
+@with_setup(prepare_stdout)
 def test_output_background_with_success_colorless():
     "A feature with background should print it accordingly under verbosity 3"
 
@@ -1253,10 +1294,10 @@ def test_output_background_with_success_colorless():
         '  I want to automate its test                 # tests/functional/bg_features/simple/simple.feature:4\n'
         '\n'
         '  Background:\n'
-        '    Given the variable "X" holds 2            # tests/functional/test_runner.py:1239\n'
+        '    Given the variable "X" holds 2            # tests/functional/test_runner.py:1280\n'
         '\n'
         '  Scenario: multiplication changing the value # tests/functional/bg_features/simple/simple.feature:9\n'
-        '    Given the variable "X" is equal to 2      # tests/functional/test_runner.py:1239\n'
+        '    Given the variable "X" is equal to 2      # tests/functional/test_runner.py:1280\n'
         '\n'
         '1 feature (1 passed)\n'
         '1 scenario (1 passed)\n'
@@ -1288,12 +1329,12 @@ def test_output_background_with_success_colorful():
         '\033[1;37m  I want to automate its test                 \033[1;30m# tests/functional/bg_features/simple/simple.feature:4\033[0m\n'
         '\n'
         '\033[1;37m  Background:\033[0m\n'
-        '\033[1;30m    Given the variable "X" holds 2            \033[1;30m# tests/functional/test_runner.py:1274\033[0m\n'
-        '\033[A\033[1;32m    Given the variable "X" holds 2            \033[1;30m# tests/functional/test_runner.py:1274\033[0m\n'
+        '\033[1;30m    Given the variable "X" holds 2            \033[1;30m# tests/functional/test_runner.py:1315\033[0m\n'
+        '\033[A\033[1;32m    Given the variable "X" holds 2            \033[1;30m# tests/functional/test_runner.py:1315\033[0m\n'
         '\n'
         '\033[1;37m  Scenario: multiplication changing the value \033[1;30m# tests/functional/bg_features/simple/simple.feature:9\033[0m\n'
-        '\033[1;30m    Given the variable "X" is equal to 2      \033[1;30m# tests/functional/test_runner.py:1274\033[0m\n'
-        '\033[A\033[1;32m    Given the variable "X" is equal to 2      \033[1;30m# tests/functional/test_runner.py:1274\033[0m\n'
+        '\033[1;30m    Given the variable "X" is equal to 2      \033[1;30m# tests/functional/test_runner.py:1315\033[0m\n'
+        '\033[A\033[1;32m    Given the variable "X" is equal to 2      \033[1;30m# tests/functional/test_runner.py:1315\033[0m\n'
         '\n'
         '\033[1;37m1 feature (\033[1;32m1 passed\033[1;37m)\033[0m\n'
         '\033[1;37m1 scenario (\033[1;32m1 passed\033[1;37m)\033[0m\n'
