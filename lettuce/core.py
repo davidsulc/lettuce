@@ -704,7 +704,29 @@ class Scenario(object):
         def run_scenario(almost_self, order=-1, outline=None, run_callbacks=False):
             try:
                 if self.background:
-                    self.background.run(ignore_case)
+                    try:
+                        self.background.run(ignore_case)
+                    except NoDefinitionFound, e:
+                        if failfast:
+                            raise
+                        steps_passed = []
+                        steps_failed = []
+                        have_undefined_step = False
+                        for step in self.background.steps:
+                            if have_undefined_step:
+                                steps_failed.append(step)
+                            else:
+                                if (not have_undefined_step) and step.why:
+                                    have_undefined_step = True
+                                else:
+                                    steps_passed.append(step)
+                        return ScenarioResult(
+                            self,
+                            [self.background.steps],
+                            steps_passed,
+                            steps_failed,
+                            [e.step]
+                        )
 
                 reasons_to_fail = []
                 all_steps, steps_passed, steps_failed, steps_undefined = Step.run_all(self.steps, outline, run_callbacks, ignore_case, failfast=failfast, display_steps=(order < 1), reasons_to_fail=reasons_to_fail)
